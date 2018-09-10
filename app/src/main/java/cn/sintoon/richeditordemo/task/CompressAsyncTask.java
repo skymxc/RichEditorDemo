@@ -27,7 +27,7 @@ public class CompressAsyncTask extends AsyncTask<String, Void, File> {
     protected File doInBackground(String... strings) {
         String s = null;
         try {
-            s = ImageUtils.compressFile(strings[0], screenWidth);
+            s = ImageUtils.compressFile(strings[0]);
             if (TextUtils.isEmpty(s)){
                 return null;
             }

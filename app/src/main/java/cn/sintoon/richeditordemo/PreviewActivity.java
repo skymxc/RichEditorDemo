@@ -2,10 +2,14 @@ package cn.sintoon.richeditordemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 public class PreviewActivity extends AppCompatActivity {
 
@@ -33,9 +37,25 @@ public class PreviewActivity extends AppCompatActivity {
 //        settings.setLoadWithOverviewMode(true);
         //字符编码
         settings.setDefaultTextEncodingName("utf-8");
-
+        settings.setJavaScriptEnabled(true);
         String html = getIntent().getStringExtra("html");
         webView.loadDataWithBaseURL(null, html, "text/html; charset=UTF-8", "utf-8", null);
 
+        webView.setWebViewClient(viewClient);
     }
+
+    protected WebViewClient viewClient = new WebViewClient(){
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            webView.loadUrl(request.getUrl().toString());
+            return true;
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            view.loadUrl(url);
+            return true;
+        }
+    };
 }

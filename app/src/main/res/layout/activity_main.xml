@@ -88,12 +88,19 @@
                     style="@style/EditorIcon"
                     android:src="@mipmap/bold" />
 
-                <TextView
+
+                <ImageView
                     android:id="@+id/button_text_color"
                     style="@style/EditorIcon"
-                    android:layout_width="32dp"
-                    android:layout_height="20dp"
-                    android:background="@color/colorBlack" />
+                    android:src="@mipmap/ic_palette" />
+
+
+                <ImageView
+                    android:id="@+id/button_link"
+                    style="@style/EditorIcon"
+                    android:src="@mipmap/insert_link"
+                    android:tint="@color/colorBlack"/>
+
 
 
                 <ImageView

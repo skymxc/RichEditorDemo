@@ -20,6 +20,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.Selection;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,9 +42,6 @@ import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.List;
 
 import cn.sintoon.richeditordemo.listener.CompressListener;
@@ -51,7 +52,6 @@ import cn.sintoon.richeditordemo.util.MyGlideEngine;
 import cn.sintoon.richeditordemo.util.SDCardUtils;
 import cn.sintoon.richeditordemo.widget.ColorPickerView;
 import cn.sintoon.richeditordemo.widget.RichEditor;
-import cn.sintoon.richeditordemo.widget.WaitFragment;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 颜色
      */
-    protected TextView mTextColor;
+    protected ImageView mTextColor;
 
     /**
      * 预览按钮
@@ -207,8 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // TODO: 2018/9/7 内存泄漏处理
-//        mEditor.destroy();
+        mEditor.destroy();
     }
 
     @Override
@@ -342,6 +341,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mStrikethrough.setOnClickListener(this);
         findViewById(R.id.button_undo).setOnClickListener(this);
         findViewById(R.id.button_redo).setOnClickListener(this);
+        findViewById(R.id.button_link).setOnClickListener(this);
     }
 
     /**
@@ -353,7 +353,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         right.setOnColorPickerChangeListener(new ColorPickerView.OnColorPickerChangeListener() {
             @Override
             public void onColorChanged(ColorPickerView picker, int color) {
-                mTextColor.setBackgroundColor(color);
+                mEditor.focusEditor();
+//                mTextColor.setBackgroundColor(color);
                 mEditor.setTextColor(color);
             }
 
@@ -373,12 +374,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.button_bold) {//字体加粗
-//            if (isClickBold) {
-//                mBold.setImageResource(R.mipmap.bold);
-//            } else {  //加粗
-//                mBold.setImageResource(R.mipmap.bold_);
-//            }
-            isClickBold = !isClickBold;
+
             mEditor.setBold();
         } else if (id == R.id.button_text_color) {//设置字体颜色
             //如果动画正在执行,直接return,相当于点击无效了,不会出现当快速点击时,
@@ -404,84 +400,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    "图片");
             callGallery();
         } else if (id == R.id.button_list_ol) {
-//            if (isListOl) {
-//                mListOL.setImageResource(R.mipmap.list_ol);
-//            } else {
-//                mListOL.setImageResource(R.mipmap.list_ol_);
-//            }
-            isListOl = !isListOl;
+
+            mEditor.focusEditor();
             mEditor.setNumbers();
         } else if (id == R.id.button_list_ul) {
-//            if (isListUL) {
-//                mListUL.setImageResource(R.mipmap.list_ul);
-//            } else {
-//                mListUL.setImageResource(R.mipmap.list_ul_);
-//            }
-            isListUL = !isListUL;
+
             mEditor.setBullets();
         } else if (id == R.id.button_underline) {
-//            if (isTextLean) {
-//                mLean.setImageResource(R.mipmap.underline);
-//            } else {
-//                mLean.setImageResource(R.mipmap.underline_);
-//            }
-            isTextLean = !isTextLean;
+
             mEditor.setUnderline();
         } else if (id == R.id.button_italic) {
-//            if (isItalic) {
-//                mItalic.setImageResource(R.mipmap.lean);
-//            } else {
-//                mItalic.setImageResource(R.mipmap.lean_);
-//            }
-            isItalic = !isItalic;
+
             mEditor.setItalic();
         } else if (id == R.id.button_align_left) {
-//            if (isAlignLeft) {
-//                mAlignLeft.setImageResource(R.mipmap.align_left);
-//            } else {
-//                mAlignLeft.setImageResource(R.mipmap.align_left_);
-//            }
-            isAlignLeft = !isAlignLeft;
+
             mEditor.setAlignLeft();
         } else if (id == R.id.button_align_right) {
-//            if (isAlignRight) {
-//                mAlignRight.setImageResource(R.mipmap.align_right);
-//            } else {
-//                mAlignRight.setImageResource(R.mipmap.align_right_);
-//            }
-            isAlignRight = !isAlignRight;
+
             mEditor.setAlignRight();
         } else if (id == R.id.button_align_center) {
-//            if (isAlignCenter) {
-//                mAlignCenter.setImageResource(R.mipmap.align_center);
-//            } else {
-//                mAlignCenter.setImageResource(R.mipmap.align_center_);
-//            }
-            isAlignCenter = !isAlignCenter;
+
             mEditor.setAlignCenter();
         } else if (id == R.id.button_indent) {
-           /* if (isIndent) {
-                mIndent.setImageResource(R.mipmap.indent);
-            } else {
-                mIndent.setImageResource(R.mipmap.indent_);
-            }
-            isIndent = !isIndent;*/
+
+            mEditor.focusEditor();
             mEditor.setIndent();
         } else if (id == R.id.button_outdent) {
-           /* if (isOutdent) {
-                mOutdent.setImageResource(R.mipmap.outdent);
-            } else {
-                mOutdent.setImageResource(R.mipmap.outdent_);
-            }
-            isOutdent = !isOutdent;*/
+
+            mEditor.focusEditor();
             mEditor.setOutdent();
         } else if (id == R.id.action_strikethrough) {
-//            if (isStrikethrough) {
-//                mStrikethrough.setImageResource(R.mipmap.strikethrough);
-//            } else {
-//                mStrikethrough.setImageResource(R.mipmap.strikethrough_);
-//            }
-            isStrikethrough = !isStrikethrough;
+
+            mEditor.focusEditor();
             mEditor.setStrikeThrough();
         } else if (id == R.id.button_undo) {
             mEditor.undo();
@@ -493,17 +443,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else if (id == R.id.tv_main_preview) {//预览
             String html = mEditor.getHtml();
             PreviewActivity.start(this, html);
+        }else if (id==R.id.button_link){
+            showInsertLinkDialog();
         }
+    }
+
+    private android.app.AlertDialog linkDialog;
+
+    /**
+     * 插入链接Dialog
+     */
+    private void showInsertLinkDialog() {
+
+        android.app.AlertDialog.Builder adb = new android.app.AlertDialog.Builder(this);
+        linkDialog = adb.create();
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_insertlink, null);
+
+        final EditText et_link_address = (EditText) view.findViewById(R.id.et_link_address);
+        final EditText et_link_title = (EditText) view.findViewById(R.id.et_link_title);
+
+        Editable etext = et_link_address.getText();
+        Selection.setSelection(etext, etext.length());
+
+        //点击确实的监听
+        view.findViewById(R.id.btn_ok).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String linkAddress = et_link_address.getText().toString();
+                String linkTitle = et_link_title.getText().toString();
+
+                if (linkAddress.endsWith("http://") || TextUtils.isEmpty(linkAddress)) {
+                    Toast.makeText(MainActivity.this, "请输入超链接地址", Toast.LENGTH_SHORT);
+                } else if (TextUtils.isEmpty(linkTitle)) {
+                    Toast.makeText(MainActivity.this, "请输入超链接标题", Toast.LENGTH_SHORT);
+                } else {
+                    mEditor.focusEditor();
+                    mEditor.insertLink(linkAddress, linkTitle);
+                    linkDialog.dismiss();
+                }
+            }
+        });
+        //点击取消的监听
+        view.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                linkDialog.dismiss();
+            }
+        });
+        linkDialog.setCancelable(false);
+        linkDialog.setView(view, 0, 0, 0, 0); // 设置 view
+        linkDialog.show();
     }
 
     /**
      * 调用图库选择
      */
     private void callGallery() {
-//        //调用系统图库
-//        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");// 相片类型
-//        startActivityForResult(intent, 1);
 
         Matisse.from(this)
                 .choose(MimeType.of(MimeType.JPEG, MimeType.PNG, MimeType.GIF))//照片视频全部显示MimeType.allOf()
@@ -528,6 +525,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (requestCode == 1) {
                     //处理调用系统图库
                 } else if (requestCode == REQUEST_CODE_CHOOSE) {
+
                     List<String> list = Matisse.obtainPathResult(data);
                     if (list.size() > 0) {
                         showProgress("图片压缩中");
@@ -535,8 +533,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onComplete(File file) {
                                 hideProgress();
+                                mEditor.focusEditor();
                                 Log.e(MainActivity.class.getSimpleName() + "", "onComplete->file://" + file.getAbsolutePath());
-                                mEditor.insertImage("file://" + file.getAbsolutePath(), "图片");
+                                mEditor.insertImage("file://" + file.getAbsolutePath(), "图片"+ "\" style=\"max-width:100%");
                             }
 
                             @Override
@@ -544,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 hideProgress();
                                 toast(exception.getMessage());
                             }
-                        }, mScreenWidth).execute(list.get(0));
+                        },  mEditor.getWidth()).execute(list.get(0));
                     }
                 }
             }
@@ -609,59 +608,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return animator;
     }
 
-    /**
-     * 根据Uri获取真实的文件路径
-     *
-     * @param context
-     * @param uri
-     * @return
-     */
-    public static String getFilePathFromUri(Context context, Uri uri) {
-        if (uri == null) return null;
 
-        ContentResolver resolver = context.getContentResolver();
-        FileInputStream input = null;
-        FileOutputStream output = null;
-        try {
-            ParcelFileDescriptor pfd = resolver.openFileDescriptor(uri, "r");
-            if (pfd == null) {
-                return null;
-            }
-            FileDescriptor fd = pfd.getFileDescriptor();
-            input = new FileInputStream(fd);
-
-
-            File outputDir = context.getCacheDir();
-            File outputFile = File.createTempFile("image", "tmp", outputDir);
-            String tempFilename = outputFile.getAbsolutePath();
-            output = new FileOutputStream(tempFilename);
-
-            int read;
-            byte[] bytes = new byte[4096];
-            while ((read = input.read(bytes)) != -1) {
-                output.write(bytes, 0, read);
-            }
-
-            return new File(tempFilename).getAbsolutePath();
-        } catch (Exception ignored) {
-
-            ignored.getStackTrace();
-        } finally {
-            try {
-                if (input != null) {
-                    input.close();
-                }
-                if (output != null) {
-                    output.close();
-                }
-            } catch (Throwable t) {
-                // Do nothing
-            }
-        }
-        return null;
-    }
-
-    WaitFragment waitFragment;
     protected ProgressDialog progressDialog;
 
     protected void showProgress(String text) {

@@ -175,9 +175,12 @@ RE.setJustifyRight = function() {
 RE.setBlockquote = function() {
     document.execCommand('formatBlock', false, '<blockquote>');
 }
-
 RE.insertImage = function(url, alt,width,height) {
     var html = '<img src="' + url + '" alt="' + alt + '" width = "'+width+'" height = "'+height+'" />';
+    RE.insertHTML(html);
+}
+RE.insertImage = function(url, alt) {
+    var html = '<img src="' + url + '" alt="' + alt + '" />';
     RE.insertHTML(html);
 }
 

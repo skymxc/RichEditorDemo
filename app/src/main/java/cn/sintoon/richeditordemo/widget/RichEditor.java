@@ -303,7 +303,7 @@ public class RichEditor extends WebView {
     public void insertImage(String url, String alt) {
         // TODO: 2018/9/7 没有获得焦点之前无法插入，这是个 bug
         exec("javascript:RE.prepareInsert();");
-        exec("javascript:RE.insertImage('" + url + "', '" + alt + "',"+300+","+300+");");
+        exec("javascript:RE.insertImage('" + url + "', '" + alt + "');");
     }
 
     public void insertLink(String href, String title) {
